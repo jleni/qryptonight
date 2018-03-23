@@ -24,6 +24,8 @@
 #include <xmrstak/backend/cpu/crypto/cryptonight.h>
 #include <xmrstak/backend/cpu/crypto/cryptonight_aesni.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include "qryptonight.h"
 
 Qryptonight::Qryptonight()
@@ -54,13 +56,35 @@ Qryptonight::~Qryptonight()
     }
 }
 
+std::string bin2hstr(const std::vector<unsigned char> &vec, uint32_t wrap) {
+    std::stringstream ss;
+
+    int count = 0;
+    for (auto val : vec) {
+        if (wrap > 0) {
+            count++;
+            if (count > wrap) {
+                ss << "\n";
+                count = 1;
+            }
+        }
+        ss << std::setfill('0') << std::setw(2) << std::hex << (int) val;
+    }
+
+    return ss.str();
+}
+
 std::vector<uint8_t> Qryptonight::hash(const std::vector<uint8_t>& input)
 {
     std::vector<uint8_t> output(32);
 
-    cryptonight_hash<MONERO_MASK, MONERO_ITER, MONERO_MEMORY, false, false>(input.data(), input.size(),
+    cryptonight_hash<MONERO_MASK, MONERO_ITER, MONERO_MEMORY, false, false>(input.data(),
+                                                                            input.size(),
                                                                             output.data(),
                                                                             _context);
+
+    std::cout << "Input : " << bin2hstr(input, 0) << std::endl;
+    std::cout << "Output: " << bin2hstr(output, 0) << std::endl;
 
     return output;
 };
